@@ -1,0 +1,248 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2024-11-25 13:33:51.963600",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "series_section",
+  "naming_series",
+  "section_break_t8ls",
+  "company",
+  "column_break_z7mn",
+  "date",
+  "section_break_czzh",
+  "payment_type",
+  "column_break_ozdb",
+  "party_type",
+  "column_break_qehz",
+  "party",
+  "column_break_zd3p",
+  "party_name",
+  "payment_advice_entry_details_section",
+  "discount_rate",
+  "column_break_xqtf",
+  "deduction_rate",
+  "column_break_ycx0",
+  "discount_on_base_total",
+  "section_break_avpu",
+  "payment_advice_details",
+  "section_break_mxwt",
+  "grand_total",
+  "column_break_z9qw",
+  "total_discount",
+  "column_break_bagk",
+  "total_deduction",
+  "column_break_0xyz",
+  "total_allocated",
+  "column_break_qcl8",
+  "total_paidreceipt"
+ ],
+ "fields": [
+  {
+   "collapsible": 1,
+   "fieldname": "series_section",
+   "fieldtype": "Section Break",
+   "label": "Series"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PAE-"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_t8ls",
+   "fieldtype": "Section Break",
+   "label": "Company Details"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_z7mn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "section_break_czzh",
+   "fieldtype": "Section Break",
+   "label": "Party Details"
+  },
+  {
+   "fieldname": "payment_type",
+   "fieldtype": "Select",
+   "label": "Payment Type",
+   "options": "Receive\nPay\nInternal Transfer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ozdb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "party_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Party Type",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_qehz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Party",
+   "options": "party_type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_zd3p",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "party_name",
+   "fieldtype": "Data",
+   "label": "Party Name"
+  },
+  {
+   "fieldname": "payment_advice_entry_details_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Advice Entry Details"
+  },
+  {
+   "fieldname": "discount_rate",
+   "fieldtype": "Float",
+   "label": "Discount Rate",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_xqtf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.party_type",
+   "fieldname": "deduction_rate",
+   "fieldtype": "Float",
+   "label": "Deduction Rate",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_ycx0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "discount_on_base_total",
+   "fieldtype": "Check",
+   "label": " Discount On Base Total"
+  },
+  {
+   "fieldname": "section_break_avpu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "payment_advice_details",
+   "fieldtype": "Table",
+   "options": "Payment Advice Entry Details"
+  },
+  {
+   "fieldname": "section_break_mxwt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "grand_total",
+   "fieldtype": "Float",
+   "label": "Grand Total Amount",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_z9qw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_discount",
+   "fieldtype": "Float",
+   "label": "Total Discount Amount",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_bagk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_deduction",
+   "fieldtype": "Float",
+   "label": "Total Deduction Amount",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_0xyz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_allocated",
+   "fieldtype": "Float",
+   "label": "Total Allocated Amount",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_qcl8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_paidreceipt",
+   "fieldtype": "Float",
+   "label": "Total Paid/Receipt Amount",
+   "precision": "2",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-02 11:25:22.067018",
+ "modified_by": "Administrator",
+ "module": "Quantbit Finance Management",
+ "name": "Payment Advice Entry",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
