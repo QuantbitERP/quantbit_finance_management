@@ -3,14 +3,15 @@
 
 import frappe
 from frappe.model.document import Document
-
+from erpnext.accounts.doctype.payment_entry.payment_entry import get_party_details
 
 class PaymentAdviceEntry(Document):
     
     
 	def before_save(self):
 		self.calculate_total_fields()
-	
+		self.check_outstanding_allotment()
+  
 	@frappe.whitelist()
 	def calculate_total_fields(self):
 		self.grand_total = self.calculate_total(child_table="payment_advice_details",total_field="grand_total",condition_field= "check")
@@ -20,9 +21,17 @@ class PaymentAdviceEntry(Document):
 		self.total_deduction = self.calculate_total(child_table="payment_advice_details",total_field="deduction_amount",condition_field= "check")
 
 	@frappe.whitelist()
+	def check_outstanding_allotment(self):
+		for i in self.get("payment_advice_details",{"check":1}):
+			if(i.allocated_amount > i.outstanding_amount):
+				frappe.msgprint(f'Row {i.idx}: Allocated Amount cannot be greater than outstanding amount.', "Warning")
+                
+     
+	@frappe.whitelist()
 	def get_payment_references(self):
 		party = self.party
 		party_type = self.party_type
+		self.get_party_name()
 		doctype_li = ["Sales Invoice","Purchase Invoice","Journal Entry"]
 		updated_doc = []
 		for doctype in doctype_li:
@@ -115,6 +124,12 @@ class PaymentAdviceEntry(Document):
 	def calculate_total(self, child_table, total_field,condition_field):
 		return sum(getattr(i, total_field) for i in self.get(child_table, {condition_field:['not in', [None , 0]]}))
 
+
+	@frappe.whitelist()
+	def get_party_name(self):
+		party_doc = get_party_details(self.company,self.party_type,self.party,self.date,cost_center=None)
+		self.party_name = party_doc.get("party_name")
+	
 	@frappe.whitelist()
 	def calculation_on_discount_rate(self):
 		total = 0
@@ -195,8 +210,9 @@ class PaymentAdviceEntry(Document):
 	def calculation_on_check(self):
 		# frappe.throw(str(type))
 		total = 0
-		for i in self.get("payment_advice_details"):
+		for i in self.get("payment_advice_details",{"allow_edit":0}):
 			if i.check:
+				i.allow_edit = i.check
 				total = i.grand_total+ i.pi_discount_apply_amount
 				if self.discount_on_base_total and self.discount_rate and self.deduction_rate:
 					i.discount_amount = round((self.discount_rate or 0) * (i.grand_total) / 100, 2)
@@ -205,13 +221,7 @@ class PaymentAdviceEntry(Document):
 				elif self.discount_on_base_total:
 					i.deduction_amount = round((self.deduction_rate or 0) * (i.total) / 100, 2)
 					i.paidreceipt_amount, i.allocated_amount = self.calculate_amounts_method(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-				elif self.deduction_rate:
-					frappe.msgprint("hiii in deduction else")
-					if i.tds_apply_amount > 0:
-						i.deduction_amount = round((self.deduction_rate or 0) * (i.tds_apply_amount) / 100, 2)
-						i.paidreceipt_amount, i.allocated_amount = self.calculate_amounts_method(i.deduction_amount, i.discount_amount, i.outstanding_amount)
 				elif self.discount_rate:
-					frappe.msgprint("hiii in discount else")
 					if i.grand_total > 0:
 						if self.discount_on_base_total:
 							i.discount_amount = round((self.discount_rate or 0) * (i.grand_total) / 100, 2)
@@ -228,8 +238,12 @@ class PaymentAdviceEntry(Document):
 								i.paidreceipt_amount, i.allocated_amount = self.calculate_amounts_method(i.deduction_amount, i.discount_amount, i.outstanding_amount)
 					else:
 						i.paidreceipt_amount, i.allocated_amount = self.calculate_amounts_method(i.deduction_amount, i.discount_amount, i.outstanding_amount)
+      
+				elif self.deduction_rate:
+					if i.tds_apply_amount > 0:
+						i.deduction_amount = round((self.deduction_rate or 0) * (i.tds_apply_amount) / 100, 2)
+						i.paidreceipt_amount, i.allocated_amount = self.calculate_amounts_method(i.deduction_amount, i.discount_amount, i.outstanding_amount)
 				else:
-					frappe.msgprint("hii im in last else")
 					if i.grand_total > 0:
 						if self.discount_on_base_total:
 							i.discount_amount = round((self.discount_rate or 0) * (i.grand_total) / 100, 2)
@@ -241,18 +255,11 @@ class PaymentAdviceEntry(Document):
 								i.paidreceipt_amount = round(total - (i.discount_amount + i.deduction_amount),2)
 								i.allocated_amount = i.paidreceipt_amount + i.discount_amount + i.deduction_amount
 							else:
-								frappe.msgprint("hii im in last else of else")
 								i.discount_amount = round((self.discount_rate or 0) * (i.grand_total) / 100, 2)
-								frappe.msgprint(str(i.discount_amount))
 								i.paidreceipt_amount, i.allocated_amount = self.calculate_amounts_method(i.deduction_amount, i.discount_amount, i.outstanding_amount)
 					else:
 							i.paidreceipt_amount, i.allocated_amount = self.calculate_amounts_method(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-			else:
-				i.discount_amount = 0
-				i.allocated_amount = 0
-				i.deduction_amount = 0
-				i.paidreceipt_amount = 0
-			
+       			
 		self.calculate_total_fields()
 
    

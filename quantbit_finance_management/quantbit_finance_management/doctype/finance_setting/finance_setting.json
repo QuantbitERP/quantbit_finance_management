@@ -1,0 +1,63 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-12-02 18:32:44.947447",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "payment_entry_tab",
+  "company",
+  "default_deduction_account",
+  "default_discount_account"
+ ],
+ "fields": [
+  {
+   "fieldname": "payment_entry_tab",
+   "fieldtype": "Tab Break",
+   "label": "Payment Entry"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "default_deduction_account",
+   "fieldtype": "Link",
+   "label": "Default Deduction Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "default_discount_account",
+   "fieldtype": "Link",
+   "label": "Default Discount Account",
+   "options": "Account"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-12-02 18:33:12.567354",
+ "modified_by": "Administrator",
+ "module": "Quantbit Finance Management",
+ "name": "Finance Setting",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

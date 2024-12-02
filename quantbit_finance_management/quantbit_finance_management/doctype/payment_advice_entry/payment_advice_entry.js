@@ -43,9 +43,6 @@ frappe.ui.form.on('Payment Advice Entry', {
     discount_on_base_total: async function(frm) {
         await call_method(frm, 'calculation_on_discount_on_base_total');
 	},
-    // add_references: async function(frm){
-    //     await call_method(frm, 'calculation_on_deduction_rate');            
-    // } calculation_on_deduction
 });
 
 frappe.ui.form.on("Payment Advice Entry Details", {
@@ -60,6 +57,16 @@ frappe.ui.form.on("Payment Advice Entry Details", {
 	},
     check: async function(frm,cdt,cdn) {
         let d = locals[cdt][cdn];
-        await call_method(frm, 'calculation_on_check');
+        console.log("Check Value:", d.check);
+        if(d.check == 1){
+            await call_method(frm, 'calculation_on_check');
+        }else{
+            console.log("Check Value else:", d.check);
+            frappe.model.set_value(cdt, cdn, "discount_amount", 0);
+            frappe.model.set_value(cdt, cdn, "allocated_amount", 0);
+            frappe.model.set_value(cdt, cdn, "deduction_amount", 0);
+            frappe.model.set_value(cdt, cdn, "paidreceipt_amount", 0);
+            frappe.model.set_value(cdt, cdn, "allow_edit", 0);
+        }
 	},
 });
