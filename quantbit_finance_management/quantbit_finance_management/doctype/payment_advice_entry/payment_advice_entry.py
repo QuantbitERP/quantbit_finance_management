@@ -156,51 +156,44 @@ class PaymentAdviceEntry(Document):
 	def get_party_name(self):
 		party_doc = get_party_details(self.company,self.party_type,self.party,self.date,cost_center=None)
 		self.party_name = party_doc.get("party_name")
-	
+ 
 	@frappe.whitelist()
 	def calculation_on_discount_rate(self):
 		total = 0
 		for i in self.get("payment_advice_details",{"check":1}):
 			total = i.grand_total+ i.pi_discount_apply_amount
 			if i.grand_total > 0:
-				if self.discount_on_base_total:
+				if i.pi_discount_apply_amount > 0:
+					i.deduction_amount  = round(getval(self.deduction_rate) * (i.total) / 100, 2)
+					i.discount_amount,i.paidreceipt_amount,i.allocated_amount = self.calculate_if_pi_discount(self.discount_rate,total,i.deduction_amount)
+				else:
 					i.discount_amount, i.deduction_amount = self.calculate_discount_and_deduction(self.discount_rate,self.deduction_rate,i.grand_total,i.total)
 					i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-				else:
-					if i.pi_discount_apply_amount > 0:
-						i.discount_amount,i.paidreceipt_amount,i.allocated_amount = self.calculate_if_pi_discount(self.discount_rate,total,i.deduction_amount)
-					else:
-						i.discount_amount = round((self.discount_rate or 0) * (i.grand_total) / 100, 2)
-						i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
+
 			else:
 				i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
 		self.calculate_total_fields()
+    
     
     
 	@frappe.whitelist()
 	def calculation_on_deduction_rate(self):
 		for i in self.get("payment_advice_details",{"check":1}):
 			if i.tds_apply_amount > 0:
-				i.deduction_amount = round(((self.deduction_rate or 0) * (i.tds_apply_amount) / 100), 2)
+				i.deduction_amount = round((getval(self.deduction_rate) * (i.tds_apply_amount) / 100), 2)
 				i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
+			else:
+				i.deduction_amount  = round(getval(self.deduction_rate) * (i.total) / 100, 2)
+				i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
+    	
 		self.calculate_total_fields()
   
 	@frappe.whitelist()
 	def calculation_on_discount_on_base_total(self):
-		total = 0
 		for i in self.get("payment_advice_details",{"check":1}):
-			total = i.grand_total+ i.pi_discount_apply_amount
-			if i.grand_total > 0:
-				if self.discount_on_base_total:
-					i.discount_amount, i.deduction_amount = self.calculate_discount_and_deduction(self.discount_rate,self.deduction_rate,i.grand_total,i.total)
-					i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-				else:
-					if i.pi_discount_apply_amount > 0:
-						i.discount_amount,i.paidreceipt_amount,i.allocated_amount = self.calculate_if_pi_discount(self.discount_rate,total,i.deduction_amount)
-					else:
-						i.discount_amount = round((self.discount_rate or 0) * (i.grand_total) / 100, 2)
-						i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-  
+			if i.grand_total > 0 and self.discount_on_base_total:
+				i.discount_amount, i.deduction_amount = self.calculate_discount_and_deduction(self.discount_rate,self.deduction_rate,i.grand_total,i.total)
+				i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
 			else:
 				i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
   
@@ -211,14 +204,11 @@ class PaymentAdviceEntry(Document):
 		total = 0
 		for i in self.get("payment_advice_details",{"check":1}):
 			total = i.grand_total+ i.pi_discount_apply_amount
-			if self.discount_on_base_total:
-				i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
+			if i.pi_discount_apply_amount > 0:
+				i.deduction_amount  = round(getval(self.deduction_rate) * (i.total) / 100, 2)
+				i.discount_amount,i.paidreceipt_amount,i.allocated_amount = self.calculate_if_pi_discount(self.discount_rate,total,i.deduction_amount)
 			else:
-				if i.pi_discount_apply_amount > 0:
-					i.paidreceipt_amount = round(total - (i.discount_amount + i.deduction_amount),2)
-					i.allocated_amount = i.paidreceipt_amount + i.discount_amount + i.deduction_amount
-				else:
-					i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
+				i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
 		self.calculate_total_fields()
 
 	@frappe.whitelist()
@@ -227,48 +217,27 @@ class PaymentAdviceEntry(Document):
 			i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
 		self.calculate_total_fields()
 
+
 	@frappe.whitelist()
 	def calculation_on_check(self):
 		total = 0
-		for i in self.get("payment_advice_details",{"allow_edit":0}):
+		for i in self.get("payment_advice_details", {"allow_edit": 0}):
 			if i.check:
 				i.allow_edit = i.check
-				total = i.grand_total+ i.pi_discount_apply_amount
-				if self.discount_on_base_total and self.discount_rate and self.deduction_rate:
-					i.discount_amount, i.deduction_amount = self.calculate_discount_and_deduction(self.discount_rate,self.deduction_rate,i.grand_total,i.total)
-					i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-				elif self.discount_on_base_total:
-					i.deduction_amount = round((self.deduction_rate or 0) * (i.total) / 100, 2)
-					i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-				elif self.discount_rate:
-					if i.grand_total > 0:
-						if self.discount_on_base_total:
-							i.discount_amount, i.deduction_amount = self.calculate_discount_and_deduction(self.discount_rate,self.deduction_rate,i.grand_total,i.total)
-							i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-						else:
-							if i.pi_discount_apply_amount > 0:
-								i.discount_amount,i.paidreceipt_amount,i.allocated_amount = self.calculate_if_pi_discount(self.discount_rate,total,i.deduction_amount)
-							else:
-								i.discount_amount, i.deduction_amount = self.calculate_discount_and_deduction(self.discount_rate,self.deduction_rate,i.grand_total,i.total)
-								i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-					else:
+				total = i.grand_total + i.pi_discount_apply_amount
+
+				if i.grand_total > 0:
+					if i.pi_discount_apply_amount > 0:
+						i.deduction_amount  = round(getval(self.deduction_rate) * (i.total) / 100, 2)
+						i.discount_amount, i.paidreceipt_amount, i.allocated_amount = self.calculate_if_pi_discount(self.discount_rate, total, i.deduction_amount)
+					elif i.tds_apply_amount > 0:
+						i.discount_amount = round(getval(self.discount_rate) * (i.grand_total) / 100, 2)
+						i.deduction_amount = round(getval(self.deduction_rate) * (i.tds_apply_amount) / 100, 2)
 						i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-				elif self.deduction_rate:
-					if i.tds_apply_amount > 0:
-						i.deduction_amount = round((self.deduction_rate or 0) * (i.tds_apply_amount) / 100, 2)
+					else:
+						i.discount_amount, i.deduction_amount = self.calculate_discount_and_deduction(self.discount_rate, self.deduction_rate, i.grand_total, i.total)
 						i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
 				else:
-					if i.grand_total > 0:
-						if self.discount_on_base_total:
-							i.discount_amount, i.deduction_amount = self.calculate_discount_and_deduction(self.discount_rate,self.deduction_rate,i.grand_total,i.total)
-							i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-						else:
-							if i.pi_discount_apply_amount > 0:
-								i.discount_amount,i.paidreceipt_amount,i.allocated_amount = self.calculate_if_pi_discount(self.discount_rate,total,i.deduction_amount)
-							else:
-								i.discount_amount = round((self.discount_rate or 0) * (i.grand_total) / 100, 2)
-								i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-					else:
-							i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
-       			
+					i.paidreceipt_amount, i.allocated_amount = self.calculate_allocate_paid_amount(i.deduction_amount, i.discount_amount, i.outstanding_amount)
+
 		self.calculate_total_fields()

@@ -115,7 +115,7 @@
   {
    "fieldname": "pi_discount_apply_amount",
    "fieldtype": "Float",
-   "label": "pi_discount_apply_amount",
+   "label": "Pi Discount Apply Amount",
    "precision": "2"
   },
   {
@@ -184,7 +184,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-12-02 15:21:03.137048",
+ "modified": "2024-12-06 12:26:02.960788",
  "modified_by": "Administrator",
  "module": "Quantbit Finance Management",
  "name": "Payment Advice Entry Details",
