@@ -38,7 +38,8 @@
   "column_break_0xyz",
   "total_allocated",
   "column_break_qcl8",
-  "total_paidreceipt"
+  "total_paidreceipt",
+  "amended_from"
  ],
  "fields": [
   {
@@ -54,7 +55,6 @@
    "options": "PAE-"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_t8ls",
    "fieldtype": "Section Break",
    "label": "Company Details"
@@ -120,7 +120,8 @@
   {
    "fieldname": "party_name",
    "fieldtype": "Data",
-   "label": "Party Name"
+   "label": "Party Name",
+   "read_only": 1
   },
   {
    "fieldname": "payment_advice_entry_details_section",
@@ -217,11 +218,22 @@
    "label": "Total Paid/Receipt Amount",
    "precision": "2",
    "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Payment Advice Entry",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2024-12-02 11:25:22.067018",
+ "modified": "2024-12-02 16:24:06.737769",
  "modified_by": "Administrator",
  "module": "Quantbit Finance Management",
  "name": "Payment Advice Entry",
@@ -229,6 +241,7 @@
  "owner": "Administrator",
  "permissions": [
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -238,9 +251,11 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],
+ "search_fields": "date,payment_type,party_type,party,party_name",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
